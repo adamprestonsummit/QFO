@@ -4,25 +4,27 @@ import pandas as pd
 import json
 import re
 
-# Automatically use secret key from Streamlit secrets
-gemini_key = st.secrets.get("GEMINI_API_KEY")
-
 # App config
 st.set_page_config(page_title="Qforia", layout="wide")
 st.title("🔍 Qforia: Query Fan-Out Simulator for AI Surfaces")
 
-# Sidebar: show key but don’t ask for input
+# Sidebar: API key input and query
 st.sidebar.header("Configuration")
-st.sidebar.write("✅ Gemini API key loaded from app secrets.")
+gemini_key = st.sidebar.text_input("Gemini API Key", type="password")
 user_query = st.sidebar.text_area("Enter your query", "Enter your query here...", height=120)
 mode = st.sidebar.radio("Search Mode", ["AI Overview (simple)", "AI Mode (complex)"])
 
+# Configure Gemini
 if gemini_key:
     genai.configure(api_key=gemini_key)
-    model = genai.GenerativeModel("gemini-1.5-flash-latest")
+    # Ensure you are using a model that supports longer/complex JSON outputs well.
+    # The user's model "gemini-2.5-flash-preview-05-20" might be a specific version;
+    # if issues arise, consider trying "gemini-1.5-flash-latest" or "gemini-1.5-pro-latest".
+    model = genai.GenerativeModel("gemini-1.5-flash-latest") # Using a common recent flash model
 else:
-    st.error("Gemini API Key is missing in Streamlit secrets.")
+    st.error("Please enter your Gemini API Key to proceed.")
     st.stop()
+
 
 # Prompt with detailed Chain-of-Thought logic
 def QUERY_FANOUT_PROMPT(q, mode):
